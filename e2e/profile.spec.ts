@@ -12,8 +12,9 @@ import {
   PHNO,
   PIN_CODE,
 } from "../constants/sampleProfile";
-import { login } from "../reusable/auth";
-import { mockProfileApi } from "../reusable/networkApis";
+import { login } from "../utils/auth";
+import { mockProfileApi } from "../utils/networkApis";
+import { fillTextbox } from "../utils/forms";
 
 test.describe("Profile Page", () => {
   test.beforeEach(async ({ page }) => {
@@ -21,7 +22,7 @@ test.describe("Profile Page", () => {
     await login(page);
   });
 
-  test.skip("update button should be disabled when no values are not changed", async ({
+  test("update button should be disabled when no values are changed", async ({
     page,
   }) => {
     await expect(page).toHaveURL(PROFILE_URL);
@@ -31,9 +32,10 @@ test.describe("Profile Page", () => {
   test("Fill the form and updated details", async ({ page }) => {
     await expect(page).toHaveURL(PROFILE_URL);
 
-    await page.getByRole("textbox", { name: "First Name" }).fill(FIRST_NAME);
-    await page.getByRole("textbox", { name: "Last Name" }).fill(LAST_NAME);
-    await page.getByRole("textbox", { name: "Email" }).fill(EMAIL);
+    fillTextbox(page, "First Name", FIRST_NAME);
+    fillTextbox(page, "Last Name", LAST_NAME);
+    fillTextbox(page, "Email", EMAIL);
+
     await expect(
       page.getByRole("textbox", { name: "Mobile Number" })
     ).toHaveValue(PHNO);
@@ -43,13 +45,11 @@ test.describe("Profile Page", () => {
     const prevGender = await genderEl.textContent();
     console.log({ prevGender });
 
-    await page
-      .getByRole("textbox", { name: "Current City" })
-      .fill(CURRENT_CITY);
-    await page.getByRole("textbox", { name: "Pincode" }).fill(PIN_CODE);
+    fillTextbox(page, "Current City", CURRENT_CITY);
+    fillTextbox(page, "Pincode", PIN_CODE);
 
     const updateBtn = await page.getByRole("button", { name: "Update" });
-    await expect(updateBtn).toBeEnabled();
+    await expect(updateBtn).not.toBeDisabled();
     await updateBtn.click();
 
     await page.waitForResponse(UPDATE_PROFILE_API);
